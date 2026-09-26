@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <title>גלריית שאלות (לבדיקת הורה)</title>
+  <link rel="stylesheet" href="css/style.css?v=muic26cd">
+  <style>
+    body { background: #fff; } .g { max-width: 900px; margin: 0 auto; padding: 16px; }
+    .g h1 { font-size: 22px; } .g h2 { font-size: 16px; margin: 18px 0 4px; border-bottom: 1px solid #ccc; }
+    .card { border: 1px solid #ddd; border-radius: 10px; padding: 10px 14px; margin: 8px 0; break-inside: avoid; }
+    .card .meta { font-size: 11px; color: #777; direction: ltr; text-align: left; } .card p { margin: 4px 0; font-size: 15px; }
+    .card .opts { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; margin: 6px 0; } .card .opt { border: 1px solid #ccc; border-radius: 8px; padding: 4px 10px; }
+    .card .opt.ok { border: 2px solid #2a9d8f; background: #e6f6ee; } .card .opt-number, .card .opt-text { font-size: 16px; } .card .opt-unit { font-size: 13px; }
+    .card .why { background: #fdf1dc; border-radius: 8px; padding: 4px 10px; font-size: 14px; } .card .eq { font-size: 14px; }
+  </style>
+</head>
+<body>
+<div class="g" id="g"><h1>גלריית שאלות: דוגמה מכל סוג, עם התשובה וההסבר</h1><p>דף לבדיקת הורה. כל רענון מייצר דוגמאות חדשות. אפשר להדפיס.</p></div>
+<script type="module">
+  import { generateFigural } from './js/generators/figural.js?v=muic26cd';
+  import { generateGlyph } from './js/generators/glyph.js?v=muic26cd';
+  import { generateNumShapes } from './js/generators/numshapes.js?v=muic26cd';
+  import { generateArithmetic } from './js/generators/arithmetic.js?v=muic26cd';
+  import { generateWordProblem } from './js/generators/wordproblems.js?v=muic26cd';
+  import { stemHtml, optionHtml, explainLineHtml } from './js/render.js?v=muic26cd';
+  const seed0 = Number(new URLSearchParams(location.search).get('seed')) || Math.floor(Math.random() * 1e6);
+  let n = 0; const seed = () => seed0 + (++n) * 7919;
+  const g = document.getElementById('g');
+  const section = (t) => g.insertAdjacentHTML('beforeend', `<h2>${t}</h2>`);
+  const card = (q) => g.insertAdjacentHTML('beforeend', `<div class="card"><div class="meta">${q.category} / ${q.subtype} / ${q.ruleFamily} / difficulty ${q.difficulty} / ${q.id}</div>
+    <p><b>${q.prompt}</b></p>${q.stem.kind === 'none' ? '' : `<div>${stemHtml(q, { mono: true, size: 64 })}</div>`}
+    <div class="opts" dir="ltr">${q.options.map((o, i) => `<span class="opt ${i === q.correctIndex ? 'ok' : ''}">${i + 1}. ${optionHtml(q, o, { mono: true, size: 56 })}</span>`).join('')}</div>
+    <div class="why">${q.explanation.text}${(q.explanation.lines || []).map(explainLineHtml).join('')}</div></div>`);
+  section('מספרים בצורות: הפורמטים הרשמיים');
+  for (const format of ['circles', 'pyramid', 'machine', 'fan', 'arrows']) for (const difficulty of [1, 2]) card(generateNumShapes(seed(), { difficulty, format }));
+  section('מספרים בצורות: פורמטים נוספים (מכון נועם)');
+  for (const format of ['ring', 'butterfly']) card(generateNumShapes(seed(), { difficulty: 2, format }));
+  section('צורות בסגנון הרשמי');
+  for (const family of ['arrow', 'orbit', 'dots']) for (const format of ['series', 'matrix']) card(generateGlyph(seed(), { difficulty: 2, family, format }));
+  card(generateGlyph(seed(), { difficulty: 3, family: 'orbit', format: 'series' }));
+  section('צורות על רשת');
+  for (const difficulty of [1, 2, 3]) for (const format of ['series', 'matrix']) card(generateFigural(seed(), { difficulty, format }));
+  card(generateFigural(seed(), { difficulty: 2, format: 'analogy', family: 'rotate' }));
+  section('בעיות מילוליות');
+  for (const template of ['groups', 'share', 'divideThenMultiply', 'proportion', 'balance', 'change', 'compare', 'hall', 'riddle', 'chain', 'rate']) card(generateWordProblem(seed(), { difficulty: 2, template }));
+  section('חשבון מהיר');
+  for (const difficulty of [1, 2, 2, 3]) card(generateArithmetic(seed(), { difficulty }));
+</script>
+</body>
+</html>
